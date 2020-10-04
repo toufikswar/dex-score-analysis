@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Investigation xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" DataModelVersion="13" SyntaxVersion="3">
+  <Label>all_dex_info</Label>
+  <Object>source</Object>
+  <Platforms>
+    <Platform>windows</Platform>
+  </Platforms>
+  <Description />
+  <FieldList>
+    <string>platform</string>
+    <string>name</string>
+    <string>entity</string>
+    <string>last_ip_address</string>
+    <string>model</string>
+    <string>computer_type</string>
+    <string>os_name</string>
+    <string>ram</string>
+    <string>cpu_model</string>
+    <string>disks</string>
+    <string>score_e68cd74d1434c8403e94b31402d0b496</string>
+    <string>score_1bcf091f3c26429eacece37c97f0f624</string>
+    <string>score_abb37e008336cd515211fd5966957131</string>
+    <string>score_502d8355af3007b161777b0a80d468ec</string>
+    <string>score_8873fa85e05d4aaa8abc2d8f3e416afd</string>
+    <string>score_7b9b3caaa7a0937b83f88e27db461c8c</string>
+    <string>score_8faf4c2e16d19665a87105a9e554f750</string>
+    <string>score_56b6fe7c8e2e2d730c206c90b1034b18</string>
+    <string>score_ff5d71bbced0f859734e72f6b0c2117e</string>
+    <string>score_a8948b6eec6f0b328e6246258ad152a6</string>
+    <string>score_a52ce22d74791a50ffd6c3d0d67c56c7</string>
+  </FieldList>
+  <CategoryList>
+    <string>OS name</string>
+  </CategoryList>
+  <AggregateList />
+  <ObjectConditionList />
+</Investigation>

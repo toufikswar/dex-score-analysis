@@ -1,0 +1,205 @@
+---
+title: "DeX Internal Benchmarking"
+output: html_notebook
+---
+
+# Prerequisite
+
+This R notebook allows to generate DeX Benchmarking comparing the DeX across an organization between different **Entities**, **OS**, **Devices**, **Model** and **Types**.
+
+In order to get the data, run the investigation *./all_dex_info.xml* in your customer's instance.
+
+For running the R code, the Tidyverse package is needed.
+```{r echo=F, eval=TRUE}
+library(tidyverse)
+```
+
+
+Loading the data into a tibble. In that case the csv generated used the tabulation separator. Adapt the delim parameter to your specific use case (coma, semicolon etc).
+```{r echo=TRUE, eval=TRUE, warning=FALSE, message=FALSE}
+df <- read_delim(file = "./data-raw/data_sample.csv", delim = "\t")
+head(df)
+```
+<br>
+We rename the unknown entities (-) to "Unknown (-)".
+```{r echo=TRUE, eval=TRUE}
+# We test if there are entities with '-', if yes we rename it with 'Unknown' instead
+if (nrow(filter(df, grepl("^-$",Entity))) > 0){
+  df <- df %>%
+    mutate(Entity = replace(Entity, which(grepl("^-$", Entity)),"Unknown"))
+}
+```
+
+        
+<br><br>
+
+## DeX by Entity
+
+We organize and tidy the tidy the data.
+```{r echo=TRUE, eval=TRUE}
+df.tidy <- df %>%
+  group_by(Entity) %>%
+  summarize(count_devices = n(),
+            dxs_device = mean(`DXS - Device (DXS - Device)`, na.rm = TRUE),
+            dxs_browsing = mean(`DXS - Web browsing (DXS - Web browsing)`, na.rm = TRUE),
+            dxs_security = mean(`DXS - Security (DXS - Security)`, na.rm = TRUE),
+            dxs_productivity = mean(`DXS - Productivity (DXS - Productivity)`, na.rm = TRUE),
+            dxs_business_apps = mean(`DXS - Business apps (DXS - Business apps)`, na.rm = TRUE)) %>%
+  arrange(desc(count_devices)) %>%
+  # We keep only entities with more than 100 devices
+  filter(count_devices > 100)
+  head(df.tidy)
+```
+
+<br>
+
+We convert tibble to the long format (more tidyverse friendly format).
+```{r echo=TRUE, eval=TRUE}
+df.long <- gather(df.tidy, type, value, -Entity, -count_devices)
+head(df.long)
+```
+
+
+We plot the results in a barplot:
+```{r echo=FALSE, eval=TRUE, fig.align="center"}
+df.long %>%
+ggplot(mapping =  aes(x = Entity, y = value, fill = type, label = value)) +
+  geom_bar(stat = "identity", alpha = 0.8) +
+  geom_text(aes(label=round(value,1)),position=position_stack(vjust = 0.5),color="white", fontface = "bold", size=3) +
+  theme_minimal() +
+  labs(y="")+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 7), 
+        axis.text.y = element_blank(),
+        text = element_text(size=12)) +
+  guides(fill=guide_legend(title="DeX")) +
+  scale_fill_manual(labels = c("Web Browsing", "Business", "Device", "Productivity", "Security"),
+                    values = c("#C3D7A4", "#52854C", "#4E84C4", "#293352", "#52898C"))
+```
+
+<br><br>
+
+## DeX by OS
+
+We organize and tidy the tidy the data.
+```{r echo=TRUE, eval=TRUE}
+df.os.tidy <- df %>%
+  group_by(`OS name`) %>%
+  summarize(count_devices = n(),
+            dxs_device = mean(`DXS - Device (DXS - Device)`, na.rm = TRUE),
+            dxs_browsing = mean(`DXS - Web browsing (DXS - Web browsing)`, na.rm = TRUE),
+            dxs_security = mean(`DXS - Security (DXS - Security)`, na.rm = TRUE),
+            dxs_productivity = mean(`DXS - Productivity (DXS - Productivity)`, na.rm = TRUE),
+            dxs_business = mean(`DXS - Business apps (DXS - Business apps)`, na.rm = TRUE)) %>%
+  arrange(desc(count_devices))
+head(df.os.tidy)
+```
+
+<br>
+
+We convert tibble to the long format (more tidyverse friendly format).
+```{r echo=TRUE, eval=TRUE}
+df.os.long <- gather(df.os.tidy, type, value, -`OS name`, -count_devices)
+head(df.os.long)
+```
+
+<br>
+
+We plot the results in a barplot.
+```{r echo=FALSE, eval=TRUE, fig.align="center"}
+df.os.long %>%
+ggplot(mapping = aes(x = `OS name`, y = value, fill = type)) +
+  geom_bar(stat = "identity", alpha = 0.8, position = "dodge") +
+  xlab("OS Name") +
+  ylab("Score")+
+  theme_minimal() +
+  theme(text = element_text(size=12),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) +
+  guides(fill=guide_legend(title="DeX")) +
+  scale_fill_manual(labels = c("Web Browsing", "Business","Device", "Productivity", "Security") ,values = c("#C3D7A4", "#52854C", "#4E84C4", "#293352", "#52898C"))+
+  facet_wrap(~`OS name`,scales = "free_x")
+```
+
+<br><br>
+
+## DeX by Device Type
+
+We organize and tidy the tidy the data.
+```{r echo=TRUE, eval=TRUE}
+df.type.tidy <- df %>%
+  group_by(`Device type`) %>%
+  summarize(count_devices = n(),
+            dxs_device = mean(`DXS - Device (DXS - Device)`, na.rm = TRUE),
+            dxs_browsing = mean(`DXS - Web browsing (DXS - Web browsing)`, na.rm = TRUE),
+            dxs_security = mean(`DXS - Security (DXS - Security)`, na.rm = TRUE),
+            dxs_productivity = mean(`DXS - Productivity (DXS - Productivity)`, na.rm = TRUE),
+            dxs_business = mean(`DXS - Business apps (DXS - Business apps)`, na.rm = TRUE)) %>%
+  arrange(desc(count_devices))
+head(df.type.tidy)
+```
+<br>
+We convert tibble to the long format (more tidyverse friendly format).
+```{r echo=TRUE, eval=TRUE}
+df.type.long <- gather(df.type.tidy, type, value, -`Device type`, -count_devices)
+head(df.type.long)
+```
+<br>
+We plot the results in a barplot.
+```{r echo=FALSE, eval=TRUE, fig.align="center"}
+df.type.long %>%
+ggplot(mapping = aes(x = `Device type`, y = value, fill = type)) +
+  geom_bar(stat = "identity", alpha = 0.8, position = "dodge") +
+  xlab("Device Type") +
+  ylab("Score")+
+  #scale_fill_brewer(palette = "Dark") +
+  theme_minimal() +
+  theme(text = element_text(size=12),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank()) +
+  guides(fill=guide_legend(title="DeX")) +
+  scale_fill_manual(labels = c("Web Browsing", "Business", "Device", "Productivity", "Security") ,values = c("#C3D7A4", "#52854C", "#4E84C4", "#293352", "#52898C"))+
+  facet_wrap(~`Device type`,scales = "free_x")
+```
+
+<br><br>
+
+## DeX by Device Model
+
+We organize and tidy the tidy the data.
+```{r echo=TRUE, eval=TRUE}
+df.model.tidy <- df %>%
+  group_by(`Device model`) %>%
+  summarize(count_devices = n(),
+            dxs_device = mean(`DXS - Device (DXS - Device)`, na.rm = TRUE),
+            dxs_browsing = mean(`DXS - Web browsing (DXS - Web browsing)`, na.rm = TRUE),
+            dxs_security = mean(`DXS - Security (DXS - Security)`, na.rm = TRUE),
+            dxs_productivity = mean(`DXS - Productivity (DXS - Productivity)`, na.rm = TRUE),
+            dxs_business = mean(`DXS - Business apps (DXS - Business apps)`, na.rm = TRUE)) %>%
+  arrange(desc(count_devices)) %>%
+  # We keep only entities with more than 100 devices
+  filter(count_devices > 100)
+head(df.model.tidy)
+```
+<br>
+We convert tibble to the long format (more tidyverse friendly format).
+```{r echo=TRUE, eval=TRUE}
+df.model.long <- gather(df.model.tidy, type, value, -`Device model`, -count_devices)
+head(df.model.long)
+```
+
+<br>
+We plot the results in a barplot:
+```{r echo=FALSE, eval=TRUE, fig.align="center"}
+df.model.long %>%
+  ggplot(mapping =  aes(x = `Device model`, y = value, fill = type, label = value)) +
+  geom_bar( stat = "identity", alpha = 0.8) +
+  geom_text(aes(label=round(value,1)),position=position_stack(vjust = 0.5),color="white", fontface = "bold", size=3) +
+  theme_minimal() +
+  labs(y="")+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+        axis.text.y = element_blank(),
+        text = element_text(size=10)) +
+  guides(fill=guide_legend(title="DeX")) +
+  scale_fill_manual(labels = c("Web Browsing", "Business", "Device", "Productivity", "Security"),
+                    values = c("#C3D7A4", "#52854C", "#4E84C4", "#293352", "#52898C"))
+```
